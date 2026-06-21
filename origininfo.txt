@@ -1,0 +1,54 @@
+api-analytics-platform/
+├── .github/
+│   └── workflows/
+│       └── pipeline.yml
+├── data_generation/
+│   ├── generator.py
+│   ├── producer.py
+│   └── requirements.txt
+├── ingestion/
+│   └── consumer.py
+├── dbt/
+│   ├── dbt_project.yml
+│   ├── profiles.yml
+│   ├── models/
+│   │   ├── staging/
+│   │   │   ├── schema.yml
+│   │   │   └── stg_api_events.sql
+│   │   ├── marts/
+│   │   │   ├── core/
+│   │   │   │   ├── daily_active_users.sql
+│   │   │   │   ├── endpoint_performance.sql
+│   │   │   │   ├── error_taxonomy.sql
+│   │   │   │   ├── cohort_retention.sql
+│   │   │   │   ├── token_economics.sql
+│   │   │   │   └── tier_migration.sql
+│   │   │   └── schema.yml
+│   │   └── sources.yml
+│   └── tests/
+│       └── assert_positive_latency.sql
+├── great_expectations/
+│   ├── great_expectations.yml
+│   ├── expectations/
+│   │   └── api_events_suite.json
+│   └── checkpoints/
+│       └── api_checkpoint.yml
+├── ml_models/
+│   ├── anomaly_detection.py
+│   ├── churn_prediction.py
+│   ├── survival_analysis.py
+│   ├── causal_inference.py
+│   ├── llm_narrative.py
+│   ├── train_all.py
+│   └── requirements.txt
+├── dashboard/
+│   ├── app.py
+│   └── utils.py
+├── scripts/
+│   └── setup.sh
+├── README.md
+├── ARCHITECTURE.md
+└── global_requirements.txt
+
+docker run --name postgres-local -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=api_analytics_dev -p 5432:5432 -d postgres:15
+
