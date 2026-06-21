@@ -2,12 +2,33 @@
 *
 
 # Then explicitly allow only specific files
-!*.py
-!*.md
-!*.txt
-!*.toml
-!.gitignore
-!.env.example
+!dashboard/
+!dashboard/*
+
+!data_generation/
+!data_generation/*
+
+!dbt/
+!dbt/*
+
+documents/
+documents/*
+
+!great_expectations/
+!great_expectations/*
+
+!ingestion/
+!ingestion/*
+
+!ml_models/
+!ml_models/*
+
+!scripts/
+!scripts/*
+
+!global_requirements.txt
+!architecture.md
+!readme.md
 
 # Deny sensitive files even if they match allowed patterns
 .env
@@ -15,3 +36,4 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+

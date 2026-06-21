@@ -1,0 +1,25 @@
+name: 'api_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'api_analytics'
+
+model-paths: ["models"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  api_analytics:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+      core:
+        +schema: marts

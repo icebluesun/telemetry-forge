@@ -1,0 +1,2 @@
+Platform Health Summary:
+Plattform hat 25,0 täglich aktive Benutzer, 50,0 Anfragen, Fehlerrate 8,00%, durchschnittliche Latenzzeit 23,7ms.

@@ -1,0 +1,18 @@
+# great_expectations/great_expectations.yml
+config_version: 3.0
+
+datasources:
+  postgres_datasource:
+    class_name: Datasource
+    module_name: great_expectations.datasource
+    execution_engine:
+      module_name: great_expectations.execution_engine
+      class_name: SqlAlchemyExecutionEngine
+      connection_string: $POSTGRES_DSN
+    data_connectors:
+      default_configured_data_connector:
+        class_name: ConfiguredAssetSqlDataConnector
+        assets:
+          api_events_asset:
+            table_name: raw_api_events
+            schema_name: public
