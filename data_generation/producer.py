@@ -36,8 +36,6 @@ if KAFKA_CA_CERT:
         f.write(KAFKA_CA_CERT)
         ca_cert_path = f.name
         print(f"Certificate written to: {ca_cert_path}")
-        
-        # Print first 100 characters for verification
         print(f"Cert starts with: {KAFKA_CA_CERT[:100]}")
 else:
     print("No certificate found in environment")
@@ -46,7 +44,6 @@ def create_producer():
     if not KAFKA_BROKERS or not KAFKA_USERNAME or not KAFKA_PASSWORD:
         raise ValueError("Missing Kafka environment variables.")
     
-    # Convert brokers string to list
     broker_list = [b.strip() for b in KAFKA_BROKERS.split(',') if b.strip()]
     print(f"Broker list: {broker_list}")
     
@@ -59,7 +56,6 @@ def create_producer():
         'value_serializer': lambda v: json.dumps(v).encode('utf-8'),
         'acks': 'all',
         'retries': 3,
-        'api_version_auto_timeout_ms': 10000,  # Increased timeout
     }
     
     if ca_cert_path:
