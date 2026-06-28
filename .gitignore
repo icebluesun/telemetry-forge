@@ -27,6 +27,7 @@ documents/*
 !scripts/*
 
 !global_requirements.txt
+!requirements.txt
 !architecture.md
 !readme.md
 
