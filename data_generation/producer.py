@@ -6,68 +6,78 @@ import os
 import tempfile
 import json
 import time
+import random
 from datetime import datetime, timezone, timedelta
 from kafka import KafkaProducer
-# from kafka.errors import NoBrokersAvailable
 from generator import APITelemetryGenerator
 import logging
-
-ca_cert = os.getenv("KAFKA_CA_CERT")
-ca_cert_path = None
-if ca_cert:
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.pem') as f:
-        f.write(ca_cert)
-        ca_cert_path = f.name
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Environment variables (set in GitHub secrets or local .env)
-KAFKA_BROKERS = os.getenv("KAFKA_BROKERS", "").split(",")
+# Environment variables
+KAFKA_BROKERS = os.getenv("KAFKA_BROKERS", "")
 KAFKA_USERNAME = os.getenv("KAFKA_USERNAME", "")
 KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD", "")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "api_events")
+KAFKA_CA_CERT = os.getenv("KAFKA_CA_CERT")
 
-# Create producer with SASL/SSL configuration
+# DEBUG: Check if certificate is loaded
+print("=== DEBUG ===")
+print(f"KAFKA_BROKERS: {KAFKA_BROKERS}")
+print(f"KAFKA_USERNAME: {KAFKA_USERNAME}")
+print(f"KAFKA_TOPIC: {KAFKA_TOPIC}")
+print(f"CA_CERT length: {len(KAFKA_CA_CERT) if KAFKA_CA_CERT else 0}")
+
+# Write certificate to temp file if provided
+ca_cert_path = None
+if KAFKA_CA_CERT:
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.pem') as f:
+        f.write(KAFKA_CA_CERT)
+        ca_cert_path = f.name
+        print(f"Certificate written to: {ca_cert_path}")
+        
+        # Print first 100 characters for verification
+        print(f"Cert starts with: {KAFKA_CA_CERT[:100]}")
+else:
+    print("No certificate found in environment")
+
 def create_producer():
     if not KAFKA_BROKERS or not KAFKA_USERNAME or not KAFKA_PASSWORD:
         raise ValueError("Missing Kafka environment variables.")
     
-    producer = KafkaProducer(
-        bootstrap_servers=KAFKA_BROKERS,
-        security_protocol="SASL_SSL",
-        sasl_mechanism="SCRAM-SHA-256",
-        sasl_plain_username=KAFKA_USERNAME,
-        sasl_plain_password=KAFKA_PASSWORD,
-        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-        acks="all",
-        retries=3,
-        ssl_cafile=ca_cert_path,
-    )
-    return producer
-
-def stream_events(producer, generator, num_events=1000, batch_size=100, delay=0.1):
-    """Generate and send events in batches."""
-    start_time = datetime.now(timezone.utc)
-    sent = 0
-    while sent < num_events:
-        batch = generator.generate_batch(min(batch_size, num_events - sent), start_time)
-        for event in batch:
-            try:
-                future = producer.send(KAFKA_TOPIC, value=event)
-                future.get(timeout=5)
-                sent += 1
-            except Exception as e:
-                logger.error(f"Failed to send event: {e}")
-                break
-        start_time = datetime.fromisoformat(batch[-1]["timestamp"]) + timedelta(milliseconds=10)
-        time.sleep(delay)
-        logger.info(f"Sent {sent} events so far")
-    producer.flush()
-    logger.info("Streaming complete.")
+    # Convert brokers string to list
+    broker_list = [b.strip() for b in KAFKA_BROKERS.split(',') if b.strip()]
+    print(f"Broker list: {broker_list}")
+    
+    producer_config = {
+        'bootstrap_servers': broker_list,
+        'security_protocol': 'SASL_SSL',
+        'sasl_mechanism': 'SCRAM-SHA-256',
+        'sasl_plain_username': KAFKA_USERNAME,
+        'sasl_plain_password': KAFKA_PASSWORD,
+        'value_serializer': lambda v: json.dumps(v).encode('utf-8'),
+        'acks': 'all',
+        'retries': 3,
+        'api_version_auto_timeout_ms': 10000,  # Increased timeout
+    }
+    
+    if ca_cert_path:
+        producer_config['ssl_cafile'] = ca_cert_path
+        print(f"Using SSL CA file: {ca_cert_path}")
+    else:
+        print("WARNING: No SSL CA file provided")
+    
+    try:
+        producer = KafkaProducer(**producer_config)
+        print("Producer created successfully")
+        return producer
+    except Exception as e:
+        print(f"Failed to create producer: {e}")
+        raise
 
 def stream_events_10s(producer, generator, days=90):
-    """Generate 1 event every 10 seconds for N days (churn-aware)."""
+    """Generate 1 event every 10 seconds for N days."""
     start = datetime.now(timezone.utc) - timedelta(days=days)
     total_events = days * 24 * 60 * 6  # 6 per minute
     
@@ -76,9 +86,6 @@ def stream_events_10s(producer, generator, days=90):
     sent = 0
     for day in range(days):
         day_start = start + timedelta(days=day)
-        
-        # Generate events for this day
-        # Number of events per day varies (some days have more traffic)
         events_per_day = random.randint(8000, 12000)
         
         for i in range(events_per_day):
@@ -90,14 +97,12 @@ def stream_events_10s(producer, generator, days=90):
             if sent % 1000 == 0:
                 logger.info(f"Sent {sent} events")
         
-        # Small delay between days
         time.sleep(0.1)
     
     producer.flush()
     logger.info(f"Done. Sent {sent} total events.")
 
 if __name__ == "__main__":
-    import random
     gen = APITelemetryGenerator(seed=42, churn_rate=0.15)
     producer = create_producer()
     stream_events_10s(producer, gen, days=90)
