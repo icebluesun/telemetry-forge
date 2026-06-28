@@ -3,6 +3,7 @@ Kafka producer that streams synthetic events to a configured Aiven Kafka topic.
 Reads connection details from environment variables.
 """
 import os
+import tempfile
 import json
 import time
 from datetime import datetime, timezone, timedelta
@@ -10,6 +11,13 @@ from kafka import KafkaProducer
 # from kafka.errors import NoBrokersAvailable
 from generator import APITelemetryGenerator
 import logging
+
+ca_cert = os.getenv("KAFKA_CA_CERT")
+ca_cert_path = None
+if ca_cert:
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.pem') as f:
+        f.write(ca_cert)
+        ca_cert_path = f.name
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,7 +42,7 @@ def create_producer():
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
         acks="all",
         retries=3,
-        ssl_cafile=None,  # Disable CA verification
+        ssl_cafile=ca_cert_path,
     )
     return producer
 
