@@ -1,62 +1,55 @@
-# scripts/run_dbt.py
 import os
 import sys
 import subprocess
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Get project root
+load_dotenv()
+
+print(f"Current directory: {os.getcwd()}")
+
 project_root = Path(__file__).parent.parent
 
-# Set environment variables
-os.environ["DBT_HOST"] = "localhost"
-os.environ["DBT_USER"] = "postgres"
-os.environ["DBT_PASSWORD"] = "postgres"
-os.environ["DBT_PORT"] = "5432"
-os.environ["DBT_DBNAME"] = "api_analytics_dev"
-os.environ["POSTGRES_DSN"] = "postgresql://postgres:postgres@localhost:5432/api_analytics_dev"
-
 def run():
-    print("🔧 Running dbt transformations...")
+    print("Running dbt transformations...")
     
-    # Change to dbt directory
     dbt_path = project_root / "dbt"
     os.chdir(dbt_path)
     
-    # Run dbt
+    # Run dbt with full refresh
     result = subprocess.run(
-        ["uv", "run", "dbt", "run", "--profiles-dir", "."],
+        ["uv", "run", "dbt", "run", "--profiles-dir", ".", "--full-refresh"],
+        cwd=dbt_path,
         capture_output=False
     )
-    
+                  
     if result.returncode != 0:
-        print("❌ dbt run failed")
+        print("dbt run failed")
         return False
     
-    print("✅ dbt run successful")
+    print("dbt run successful")
     
-    # Run dbt tests (skip if they fail)
-    print("🧪 Running dbt tests...")
+    # Run dbt tests
+    print("Running dbt tests...")
     result = subprocess.run(
         ["uv", "run", "dbt", "test", "--profiles-dir", "."],
         capture_output=False
     )
     
     if result.returncode != 0:
-        print("⚠️ dbt tests had errors (continuing anyway)")
+        print("dbt tests had errors (continuing anyway)")
     else:
-        print("✅ dbt tests passed")
+        print("dbt tests passed")
     
     # Generate dbt docs
-    print("📝 Generating dbt docs...")
+    print("Generating dbt docs...")
     subprocess.run(
         ["uv", "run", "dbt", "docs", "generate", "--profiles-dir", "."],
         capture_output=False
     )
     
-    # Change back to project root
     os.chdir(project_root)
-    
-    print("🎉 dbt complete!")
+    print("dbt complete!")
     return True
 
 if __name__ == "__main__":

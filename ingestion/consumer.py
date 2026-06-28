@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS raw_api_events (
     region TEXT NOT NULL,
     session_id TEXT NOT NULL,
     rate_limited BOOLEAN NOT NULL,
+    will_churn BOOLEAN,
+    churn_day INTEGER,
     ingested_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_raw_events_timestamp ON raw_api_events(timestamp);
@@ -60,7 +62,7 @@ class PostgresIngester:
         columns = ["event_id", "timestamp", "user_id", "user_tier", "endpoint",
                    "model_variant", "input_tokens", "output_tokens", "latency_ms",
                    "status_code", "error_type", "sdk_version", "region", "session_id",
-                   "rate_limited"]
+                   "rate_limited", "will_churn", "churn_day"]
         values = []
         for e in events:
             ts = datetime.fromisoformat(e["timestamp"])
@@ -68,7 +70,9 @@ class PostgresIngester:
                 e["event_id"], ts, e["user_id"], e["user_tier"], e["endpoint"],
                 e["model_variant"], e["input_tokens"], e["output_tokens"], e["latency_ms"],
                 e["status_code"], e["error_type"], e["sdk_version"], e["region"],
-                e["session_id"], e["rate_limited"]
+                e["session_id"], e["rate_limited"],
+                e.get("will_churn", False),
+                e.get("churn_day", None)
             ))
         
         insert_sql = f"""
@@ -77,7 +81,6 @@ class PostgresIngester:
             ON CONFLICT (event_id) DO NOTHING
         """
         
-        # Use raw connection for proper commit
         conn = self.engine.raw_connection()
         try:
             cur = conn.cursor()

@@ -1,13 +1,17 @@
-# run_dashboard.py
 import os
-import subprocess
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
-os.environ["POSTGRES_DSN"] = "postgresql://postgres:postgres@localhost:5432/api_analytics_dev"
+project_root = Path(__file__).parent.parent
+os.chdir(project_root)
 
 def run():
     print("📊 Starting dashboard...")
-    subprocess.run(["streamlit", "run", "dashboard/app.py"])
+    sys.argv = ["streamlit", "run", "dashboard/app.py"]
+    from streamlit.web import cli as stcli
+    stcli.main()
 
 if __name__ == "__main__":
     run()
-    

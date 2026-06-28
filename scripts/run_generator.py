@@ -2,6 +2,8 @@
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -13,18 +15,18 @@ from generator import APITelemetryGenerator
 from consumer import PostgresIngester
 from datetime import datetime, timezone, timedelta
 
-os.environ["POSTGRES_DSN"] = "postgresql://postgres:postgres@localhost:5432/api_analytics_dev"
-
 def run():
     print("📊 Generating 90 days of data with churn...")
-    
+    # N times an hour
+    N = 60
+
     # Create generator with churn
-    gen = APITelemetryGenerator(seed=42, churn_rate=0.15)
+    gen = APITelemetryGenerator(seed=42, churn_rate=0.25)
     ingester = PostgresIngester(os.environ["POSTGRES_DSN"])
     
     start = datetime.now(timezone.utc) - timedelta(days=90)
     all_events = []
-    total_events = 90 * 24 * 6  # 90 days × 24 hours × 6 events/hour
+    total_events = 90 * 24 * N  # 90 days × 24 hours × N events/hour
     
     print(f"Generating {total_events} events...")
     

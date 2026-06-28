@@ -102,19 +102,26 @@ class APITelemetryGenerator:
         latency = np.random.lognormal(mean=np.log(base_mean * token_factor), sigma=base_sigma)
         latency = max(10, latency)
         
-        # Status code – errors correlated with load
-        load_factor = min(1.0, (self.event_counter % 1000) / 500.0)
-        base_error_rate = 0.05
-        error_rate = base_error_rate + 0.2 * load_factor
-        has_error = random.random() < error_rate
-        status_code = 200 if not has_error else random.choices(
-            [429, 401, 400, 500, 504, 503],
-            weights=[0.4, 0.2, 0.2, 0.1, 0.05, 0.05]
-        )[0]
-        error_type = None if not has_error else random.choice(
-            [e for e in ERROR_TYPES if e is not None]
-        )
-        rate_limited = (status_code == 429) or (error_type == "RateLimitError")
+        # INJECT ANOMALIES (2% of events)
+        if random.random() < 0.02:
+            latency = latency * random.uniform(5, 20)  # 5x-20x spike
+            status_code = random.choices([500, 503, 504, 429], weights=[0.4, 0.3, 0.2, 0.1])[0]
+            error_type = random.choice(["InternalServerError", "TimeoutError", "RateLimitError"])
+            rate_limited = (status_code == 429)
+        else:
+            # Normal error patterns
+            load_factor = min(1.0, (self.event_counter % 1000) / 500.0)
+            base_error_rate = 0.05
+            error_rate = base_error_rate + 0.2 * load_factor
+            has_error = random.random() < error_rate
+            status_code = 200 if not has_error else random.choices(
+                [429, 401, 400, 500, 504, 503],
+                weights=[0.4, 0.2, 0.2, 0.1, 0.05, 0.05]
+            )[0]
+            error_type = None if not has_error else random.choice(
+                [e for e in ERROR_TYPES if e is not None]
+            )
+            rate_limited = (status_code == 429) or (error_type == "RateLimitError")
         
         # SDK and region from user
         sdk_version = random.choice(SDK_VERSIONS)
@@ -142,6 +149,8 @@ class APITelemetryGenerator:
             "region": region,
             "session_id": session_id,
             "rate_limited": rate_limited,
+            "will_churn": user["will_churn"],
+            "churn_day": user["churn_day"]
         }
 
     def generate_batch(self, count: int, start_time: datetime) -> List[Dict[str, Any]]:

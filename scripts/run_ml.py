@@ -2,6 +2,8 @@
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Get project root
 project_root = Path(__file__).parent.parent

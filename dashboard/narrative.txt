@@ -1,2 +1,7 @@
 Platform Health Summary:
-Plattform hat 25,0 täglich aktive Benutzer, 50,0 Anfragen, Fehlerrate 8,00%, durchschnittliche Latenzzeit 23,7ms.
+- DAU: 80.0
+- Requests: 239.0
+- Error Rate: 7.95%
+- Avg Latency: 35.7ms
+- P95 Latency: 81.5ms
+Platform is operating within normal parameters.
