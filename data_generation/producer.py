@@ -34,6 +34,7 @@ def create_producer():
         value_serializer=lambda v: json.dumps(v).encode("utf-8"),
         acks="all",
         retries=3,
+        ssl_cafile=None,  # Disable CA verification
     )
     return producer
 
