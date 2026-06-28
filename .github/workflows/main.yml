@@ -15,6 +15,7 @@ env:
   MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
   MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
   HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+  KAFKA_CA_CERT: ${{ secrets.KAFKA_CA_CERT }}
 
 jobs:
   run-pipeline:
