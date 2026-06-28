@@ -7,7 +7,7 @@ import json
 import time
 from datetime import datetime, timezone, timedelta
 from kafka import KafkaProducer
-from kafka.errors import NoBrokersAvailable
+# from kafka.errors import NoBrokersAvailable
 from generator import APITelemetryGenerator
 import logging
 
