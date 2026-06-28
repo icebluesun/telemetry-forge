@@ -3,10 +3,15 @@
   outputs:
     dev:
       type: postgres
-      host: localhost
-      user: postgres
-      password: postgres
-      port: 5432
-      dbname: api_analytics_dev
+      host: "{{ env_var('DBT_HOST') }}"
+      port: "{{ env_var('DBT_PORT') | int }}"
+      user: "{{ env_var('DBT_USER') }}"
+      password: "{{ env_var('DBT_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_DBNAME') }}"
+      # host: localhost
+      # user: postgres
+      # password: postgres
+      # port: 5432
+      # dbname: api_analytics_dev
       schema: public
       threads: 4

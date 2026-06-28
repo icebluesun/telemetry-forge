@@ -30,6 +30,7 @@ documents/*
 !requirements.txt
 !architecture.md
 !readme.md
+!dockerfile
 
 # Deny sensitive files even if they match allowed patterns
 .env

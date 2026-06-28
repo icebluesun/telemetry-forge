@@ -12,7 +12,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "ml_models"))
 sys.path.insert(0, str(project_root))
 
-os.environ["POSTGRES_DSN"] = "postgresql://postgres:postgres@localhost:5432/api_analytics_dev"
+# os.environ["POSTGRES_DSN"] = "postgresql://postgres:postgres@localhost:5432/api_analytics_dev"
 
 def run():
     print("🤖 Training ML models...")
