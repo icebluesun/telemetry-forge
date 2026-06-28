@@ -101,4 +101,4 @@ def stream_events_10s(producer, generator, days=90):
 if __name__ == "__main__":
     gen = APITelemetryGenerator(seed=42, churn_rate=0.15)
     producer = create_producer()
-    stream_events_10s(producer, gen, days=90)
+    stream_events_10s(producer, gen, days=1)
