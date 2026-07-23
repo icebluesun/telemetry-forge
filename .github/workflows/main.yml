@@ -1,8 +1,8 @@
-name: Full Analytics Pipeline
+name: Data Pipeline (Hourly)
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 env:
@@ -50,34 +50,3 @@ jobs:
           dbt run --profiles-dir .
           dbt test --profiles-dir . || true
 
-      - name: Train ML models
-        run: |
-          cd ml_models
-          python train_all.py
-
-      - name: Commit narrative to GitHub
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add dashboard/narrative.txt dashboard/causal_report.md || true
-          git commit -m "Update narrative [skip ci]" || true
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
-
-      - name: Push dashboard to HuggingFace Space
-        run: |
-          # Build a clean folder with only what HF needs
-          mkdir -p hf_deploy
-          cp dashboard/app.py hf_deploy/app.py
-          cp dashboard/hf_requirements.txt hf_deploy/requirements.txt
-          cp dashboard/README.md hf_deploy/README.md
-          cp dashboard/narrative.txt hf_deploy/narrative.txt 2>/dev/null || echo "No narrative yet"
-          cp dashboard/causal_report.md hf_deploy/causal_report.md 2>/dev/null || echo "No causal report yet"
-
-          cd hf_deploy
-          git init
-          git checkout -b main
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "Deploy dashboard $(date +'%Y-%m-%d')"
-          git push --force https://icebluesun:${{ secrets.HF_API_TOKEN }}@huggingface.co/spaces/icebluesun/telemetry-forge main
