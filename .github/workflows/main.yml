@@ -1,4 +1,4 @@
-name: Data Pipeline (Hourly)
+name: Full Analytics Pipeline
 
 on:
   schedule:
@@ -11,11 +11,10 @@ env:
   KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
   KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
   KAFKA_TOPIC: ${{ secrets.KAFKA_TOPIC }}
+  KAFKA_CA_CERT: ${{ secrets.KAFKA_CA_CERT }}
   MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
   MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
   MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
-  HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
-  KAFKA_CA_CERT: ${{ secrets.KAFKA_CA_CERT }}
   DBT_HOST: ${{ secrets.DBT_HOST }}
   DBT_PORT: ${{ secrets.DBT_PORT }}
   DBT_USER: ${{ secrets.DBT_USER }}
@@ -25,7 +24,7 @@ env:
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,3 +49,42 @@ jobs:
           dbt run --profiles-dir .
           dbt test --profiles-dir . || true
 
+      - name: Cull old MLflow runs (keep last 48)
+        run: |
+          python - <<'EOF'
+          import os, mlflow
+          from mlflow.tracking import MlflowClient
+
+          mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+          client = MlflowClient()
+
+          exp = client.get_experiment_by_name("api_analytics_models")
+          if exp is None:
+              print("No experiment found, skipping cull.")
+              exit(0)
+
+          runs = client.search_runs(
+              experiment_ids=[exp.experiment_id],
+              order_by=["start_time DESC"]
+          )
+          keep = 48
+          to_delete = runs[keep:]
+          print(f"Found {len(runs)} runs. Keeping {keep}, deleting {len(to_delete)}.")
+          for run in to_delete:
+              client.delete_run(run.info.run_id)
+              print(f"  Deleted run {run.info.run_id}")
+          print("MLflow cull complete.")
+          EOF
+
+      - name: Train ML models
+        run: |
+          cd ml_models
+          python train_all.py
+
+      - name: Commit narrative to GitHub
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add dashboard/narrative.txt dashboard/causal_report.md || true
+          git commit -m "Update narrative [skip ci]" || true
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
