@@ -16,6 +16,11 @@ env:
   MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
   HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
   KAFKA_CA_CERT: ${{ secrets.KAFKA_CA_CERT }}
+  DBT_HOST: ${{ secrets.DBT_HOST }}
+  DBT_PORT: ${{ secrets.DBT_PORT }}
+  DBT_USER: ${{ secrets.DBT_USER }}
+  DBT_PASSWORD: ${{ secrets.DBT_PASSWORD }}
+  DBT_DBNAME: ${{ secrets.DBT_DBNAME }}
 
 jobs:
   run-pipeline:
