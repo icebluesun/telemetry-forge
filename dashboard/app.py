@@ -288,15 +288,13 @@ elif choice == "Quality":
 # ---------- AI NARRATIVE ----------
 elif choice == "AI Narrative":
     st.header("🧠 AI Executive Summary")
+    import urllib.request
+    GITHUB_RAW = "https://raw.githubusercontent.com/icebluesun/telemetry-forge/main/dashboard"
     try:
-        with open("narrative.txt", "r") as f:
-            st.write(f.read())
-    except FileNotFoundError:
-        try:
-            with open("dashboard/narrative.txt", "r") as f:
-                st.write(f.read())
-        except FileNotFoundError:
-            st.warning("No narrative generated yet. Run the pipeline to generate one.")
+        with urllib.request.urlopen(f"{GITHUB_RAW}/narrative.txt") as r:
+            st.write(r.read().decode("utf-8"))
+    except Exception as e:
+        st.warning(f"Narrative not available yet: {e}")
 
 # ---------- ARCHITECTURE ----------
 else:
