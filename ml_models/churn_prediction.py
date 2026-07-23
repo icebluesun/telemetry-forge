@@ -43,26 +43,32 @@ def load_user_features():
     """
     df = pd.read_sql(query, engine)
     
-    # Ensure at least some churn exists
-    if df['churned'].sum() == 0:
-        print("⚠️ No churn detected. Adding synthetic churn for demo.")
+    # Ensure at least some churn exists for both train and test splits
+    if df['churned'].sum() < 10:
+        print("⚠️ Insufficient churn detected. Adding synthetic churn for demo.")
         np.random.seed(42)
-        df.loc[np.random.choice(df.index, size=int(len(df)*0.1), replace=False), 'churned'] = 1
-    
+        n_churn = max(10, int(len(df) * 0.15))
+        churn_indices = np.random.choice(df.index, size=min(n_churn, len(df)), replace=False)
+        df['churned'] = df['churned'].astype(int)
+        df.loc[churn_indices, 'churned'] = 1
+
     return df
 
 def train_churn_model():
     df = load_user_features()
-    
+
     feature_cols = ['total_requests', 'avg_latency', 'error_count', 'active_days',
                     'total_tokens', 'days_since_last']
     X = df[feature_cols].fillna(0)
-    y = df['churned']
-    
+    y = df['churned'].astype(int)
+
     tier_dummies = pd.get_dummies(df['user_tier'], prefix='tier')
     X = pd.concat([X, tier_dummies], axis=1)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # stratify ensures both classes appear in train and test
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.3, random_state=42, stratify=y
+    )
     model = GradientBoostingClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     
