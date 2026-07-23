@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 import os
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 # ==================== PAGE CONFIG ====================
 st.set_page_config(layout="wide", page_title="TelemetryForge | API Analytics")
@@ -45,7 +45,7 @@ def execute_query(query, params=None):
 def get_current_metrics():
     df = execute_query("""
         WITH latest AS (SELECT MAX(event_date) as d FROM stg_api_events)
-        SELECT 
+        SELECT
             COUNT(DISTINCT user_id) as dau,
             COUNT(*) as requests,
             ROUND(AVG(CASE WHEN is_error THEN 1.0 ELSE 0.0 END)::numeric, 4) as error_rate,
@@ -62,7 +62,7 @@ def get_current_metrics():
 @st.cache_data(ttl=3600)
 def get_time_series(days=30):
     return execute_query("""
-        SELECT 
+        SELECT
             event_date,
             COUNT(*) as requests,
             COUNT(DISTINCT user_id) as users,
@@ -78,7 +78,7 @@ def get_time_series(days=30):
 @st.cache_data(ttl=3600)
 def get_endpoint_metrics():
     return execute_query("""
-        SELECT 
+        SELECT
             endpoint,
             COUNT(*) as requests,
             ROUND(AVG(latency_ms)::numeric, 1) as avg_latency,
@@ -105,7 +105,7 @@ def get_cohort_retention():
 @st.cache_data(ttl=3600)
 def get_user_tiers():
     return execute_query("""
-        SELECT 
+        SELECT
             user_tier,
             COUNT(DISTINCT user_id) as users,
             COUNT(*) as requests,
@@ -119,7 +119,7 @@ def get_user_tiers():
 @st.cache_data(ttl=3600)
 def get_errors():
     return execute_query("""
-        SELECT 
+        SELECT
             endpoint,
             error_type,
             status_code,
@@ -131,6 +131,71 @@ def get_errors():
         ORDER BY count DESC
         LIMIT 20
     """)
+
+# ==================== CHART HELPERS ====================
+def make_timeseries_chart(df, y_col, title, y_label, color="#4C9BE8"):
+    """
+    Renders a Plotly line chart with:
+    - Solid line + filled area for complete days
+    - Dotted line + open circle for today (in-progress)
+    """
+    today = date.today()
+    df = df.copy()
+    df['event_date'] = pd.to_datetime(df['event_date']).dt.date
+
+    complete = df[df['event_date'] < today]
+    partial  = df[df['event_date'] >= today]
+
+    fig = go.Figure()
+
+    # Solid filled area — complete days
+    if not complete.empty:
+        fig.add_trace(go.Scatter(
+            x=complete['event_date'],
+            y=complete[y_col],
+            mode='lines',
+            name='Complete',
+            line=dict(color=color, width=2),
+            fill='tozeroy',
+            fillcolor=color.replace(')', ', 0.08)').replace('rgb', 'rgba') if 'rgb' in color else color + '14',
+            hovertemplate=f'%{{x}}<br>{y_label}: %{{y:,.1f}}<extra></extra>',
+        ))
+
+    # Dotted open circle — today (in-progress)
+    if not partial.empty:
+        # Connect the last complete point to today for a continuous line
+        if not complete.empty:
+            bridge = complete.iloc[[-1]]
+            fig.add_trace(go.Scatter(
+                x=list(bridge['event_date']) + list(partial['event_date']),
+                y=list(bridge[y_col])    + list(partial[y_col]),
+                mode='lines',
+                line=dict(color='#AAAAAA', width=2, dash='dot'),
+                showlegend=False,
+                hoverinfo='skip',
+            ))
+
+        fig.add_trace(go.Scatter(
+            x=partial['event_date'],
+            y=partial[y_col],
+            mode='markers+lines',
+            name='Today (in progress)',
+            line=dict(color='#AAAAAA', width=2, dash='dot'),
+            marker=dict(symbol='circle-open', size=10, color='#AAAAAA', line=dict(width=2)),
+            hovertemplate=f'%{{x}} ⏳<br>{y_label}: %{{y:,.1f}} (partial)<extra></extra>',
+        ))
+
+    fig.update_layout(
+        title=dict(text=title, font=dict(size=16)),
+        xaxis=dict(title='Date', showgrid=False),
+        yaxis=dict(title=y_label, gridcolor='rgba(200,200,200,0.2)'),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1),
+        hovermode='x unified',
+        margin=dict(l=0, r=0, t=40, b=0),
+    )
+    return fig
 
 # ==================== SIDEBAR ====================
 st.sidebar.title("📊 TelemetryForge")
@@ -156,11 +221,14 @@ if choice == "Overview":
 
     df = get_time_series(30)
     if not df.empty:
-        fig = px.line(df, x='event_date', y='requests', title='Daily Requests')
-        st.plotly_chart(fig, use_container_width=True)
-        
-        fig2 = px.line(df, x='event_date', y='avg_latency', title='Avg Latency (ms)')
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(
+            make_timeseries_chart(df, 'requests', 'Daily Requests', 'Requests', '#4C9BE8'),
+            use_container_width=True
+        )
+        st.plotly_chart(
+            make_timeseries_chart(df, 'avg_latency', 'Avg Latency (ms)', 'Latency (ms)', '#E87B4C'),
+            use_container_width=True
+        )
 
 # ---------- ENDPOINTS ----------
 elif choice == "Endpoints":
@@ -221,10 +289,14 @@ elif choice == "Quality":
 elif choice == "AI Narrative":
     st.header("🧠 AI Executive Summary")
     try:
-        with open("dashboard/narrative.txt", "r") as f:
+        with open("narrative.txt", "r") as f:
             st.write(f.read())
     except FileNotFoundError:
-        st.warning("No narrative generated yet. Run the pipeline to generate one.")
+        try:
+            with open("dashboard/narrative.txt", "r") as f:
+                st.write(f.read())
+        except FileNotFoundError:
+            st.warning("No narrative generated yet. Run the pipeline to generate one.")
 
 # ---------- ARCHITECTURE ----------
 else:
@@ -237,7 +309,7 @@ else:
     - Orchestration: GitHub Actions
     - ML Tracking: MLflow (DagsHub)
     - Dashboard: Streamlit (HuggingFace)
-    
+
     **Data Flow**
     1. Synthetic events → Kafka
     2. Consumer → PostgreSQL
