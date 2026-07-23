@@ -7,7 +7,7 @@ import os
 def load_latency_error_ts():
     """Load time-series aggregated data from PostgreSQL."""
     dsn = os.getenv("POSTGRES_DSN")
-    engine = create_engine(dsn)
+    engine = create_engine(dsn, pool_pre_ping=True, pool_recycle=300)
     query = """
     SELECT event_date, 
            avg(latency_ms) as avg_latency,

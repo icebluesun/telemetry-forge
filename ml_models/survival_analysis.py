@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 
 def fit_survival_curves():
     dsn = os.getenv("POSTGRES_DSN")
-    engine = create_engine(dsn)
+    engine = create_engine(dsn, pool_pre_ping=True, pool_recycle=300)
     query = """
     WITH user_lifetimes AS (
         SELECT user_id,

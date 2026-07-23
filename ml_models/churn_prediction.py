@@ -8,7 +8,7 @@ import numpy as np
 
 def load_user_features():
     dsn = os.getenv("POSTGRES_DSN")
-    engine = create_engine(dsn)
+    engine = create_engine(dsn, pool_pre_ping=True, pool_recycle=300)
     query = """
     WITH user_activity AS (
         SELECT 

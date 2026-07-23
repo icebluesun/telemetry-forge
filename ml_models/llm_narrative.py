@@ -13,7 +13,7 @@ def get_metrics():
     if not dsn:
         return None
     
-    engine = create_engine(dsn)
+    engine = create_engine(dsn, pool_pre_ping=True, pool_recycle=300)
     query = """
     WITH latest AS (SELECT MAX(event_date) as d FROM stg_api_events)
     SELECT 

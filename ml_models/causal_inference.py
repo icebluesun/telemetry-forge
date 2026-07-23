@@ -9,7 +9,7 @@ import os
 
 def run_diff_in_diff():
     dsn = os.getenv("POSTGRES_DSN")
-    engine = create_engine(dsn)
+    engine = create_engine(dsn, pool_pre_ping=True, pool_recycle=300)
     # Aggregate daily retention rate per tier and region
     query = """
     WITH daily_retention AS (
