@@ -4,6 +4,7 @@ Orchestrates training of all ML models and logs to MLflow.
 import os
 import json
 import logging
+from pathlib import Path
 import pandas as pd
 import mlflow
 from dotenv import load_dotenv
@@ -18,6 +19,11 @@ logging.getLogger("mlflow").setLevel(logging.ERROR)
 
 load_dotenv()
 
+# Resolve paths relative to project root regardless of CWD
+PROJECT_ROOT = Path(__file__).parent.parent
+DASHBOARD_DIR = PROJECT_ROOT / "dashboard"
+ML_DIR = PROJECT_ROOT / "ml_models"
+
 def main():
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
     mlflow.set_experiment("api_analytics_models")
@@ -31,26 +37,30 @@ def main():
         churn_model, feature_importances = train_churn_model()
         mlflow.sklearn.log_model(churn_model, "churn_predictor")
 
-        with open("feature_importances.json", "w") as f:
+        fi_path = ML_DIR / "feature_importances.json"
+        with open(fi_path, "w") as f:
             json.dump(feature_importances, f)
-        mlflow.log_artifact("feature_importances.json")
+        mlflow.log_artifact(str(fi_path))
 
         print("Fitting survival curves...")
         survival_data = fit_survival_curves()
-        survival_data.to_csv("survival_curves.csv")
-        mlflow.log_artifact("survival_curves.csv")
+        sc_path = ML_DIR / "survival_curves.csv"
+        survival_data.to_csv(sc_path)
+        mlflow.log_artifact(str(sc_path))
 
         print("Running causal inference...")
         diff_in_diff_results = run_diff_in_diff()
-        with open("diff_in_diff_results.md", "w") as f:
+        did_path = DASHBOARD_DIR / "causal_report.md"
+        with open(did_path, "w") as f:
             f.write(diff_in_diff_results)
-        mlflow.log_artifact("diff_in_diff_results.md")
+        mlflow.log_artifact(str(did_path))
 
         print("Generating LLM narrative...")
         narrative = generate_narrative()
-        with open("narrative.txt", "w") as f:
+        narrative_path = DASHBOARD_DIR / "narrative.txt"
+        with open(narrative_path, "w") as f:
             f.write(narrative)
-        mlflow.log_artifact("narrative.txt")
+        mlflow.log_artifact(str(narrative_path))
 
         mlflow.log_metric("churn_model_accuracy", 0.85)
         mlflow.log_param("training_date", str(pd.Timestamp.now()))

@@ -26,6 +26,11 @@ documents/*
 !scripts/
 !scripts/*
 
+!.github/
+!.github/**
+
+!test_pipeline_local.py
+
 !global_requirements.txt
 !requirements.txt
 !architecture.md

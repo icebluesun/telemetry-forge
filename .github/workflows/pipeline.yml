@@ -1,0 +1,16 @@
+# DISABLED — duplicate of main.yml. This file is intentionally empty.
+# All pipeline logic lives in main.yml.
+name: _disabled
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'This workflow is disabled. Use main.yml.'
+        required: true
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This workflow is disabled. See main.yml."

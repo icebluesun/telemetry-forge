@@ -1,0 +1,22 @@
+name: Keep-Alive Ping
+
+on:
+  schedule:
+    # 12 hours after the daily pipeline (midnight UTC) — keeps HF Space within 48h sleep limit
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping HuggingFace Space
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.HF_SPACE_URL }}")
+          echo "Response status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Space is alive."
+          else
+            echo "Warning: Space returned HTTP $STATUS"
+            exit 1
+          fi
