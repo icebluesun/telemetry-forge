@@ -1,7 +1,1 @@
-Platform Health Summary:
-- DAU: 74.0
-- Requests: 168.0
-- Error Rate: 7.74%
-- Avg Latency: 39.7ms
-- P95 Latency: 71.0ms
-Platform is operating within normal parameters.
+LLM narrative disabled: HF_API_TOKEN not set.
