@@ -1,7 +1,7 @@
 Platform Health Summary:
-- DAU: 55.0
-- Requests: 136.0
-- Error Rate: 7.35%
-- Avg Latency: 44.3ms
-- P95 Latency: 62.7ms
+- DAU: 700.0
+- Requests: 2,662.0
+- Error Rate: 7.25%
+- Avg Latency: 32.2ms
+- P95 Latency: 81.1ms
 Platform is operating within normal parameters.
