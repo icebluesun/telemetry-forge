@@ -1,34 +1,38 @@
 ---
-title: Telemetry Forge
+title: TelemetryForge
 emoji: 📊
-colorFrom: indigo
-colorTo: yellow
-sdk: docker
+colorFrom: blue
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.58.0
+app_file: app.py
 pinned: false
 license: mit
-app_port: 8501
 ---
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
-
 
 # TelemetryForge
 
-**Live API analytics platform with streaming, dbt, ML, and dashboard.**
+**Live API analytics platform — streaming, dbt, ML models, and a real-time dashboard.**
 
-[![Pipeline Status](https://github.com/yourusername/telemetry-forge/actions/workflows/pipeline.yml/badge.svg)](https://github.com/yourusername/telemetry-forge/actions)
+[![Pipeline](https://github.com/icebluesun/telemetry-forge/actions/workflows/main.yml/badge.svg)](https://github.com/icebluesun/telemetry-forge/actions/workflows/main.yml)
+[![MLflow on DagsHub](https://img.shields.io/badge/MLflow-DagsHub-orange?logo=mlflow)](https://dagshub.com/icebluesun/telemetry-forge.mlflow)
+[![HuggingFace Space](https://img.shields.io/badge/Dashboard-HuggingFace-yellow?logo=huggingface)](https://huggingface.co/spaces/icebluesun/telemetry-forge)
 
 ---
 
 ## What It Does
 
-Generates realistic API telemetry (like OpenAI/Claude usage), streams through Kafka, stores in PostgreSQL, transforms with dbt, trains ML models, and displays on a live dashboard.
+Generates realistic API telemetry (modelled after OpenAI/Claude usage patterns), streams through Kafka, stores in PostgreSQL, transforms with dbt, trains ML models, and displays everything on a live Streamlit dashboard — all running automatically every day via GitHub Actions.
 
 ---
 
-## Live Demo
+## Live Links
 
-[https://huggingface.co/spaces/yourusername/telemetry-forge](https://huggingface.co/spaces/yourusername/telemetry-forge)
+| | |
+|---|---|
+| 📊 Dashboard | https://icebluesun-telemetry-forge.hf.space |
+| 🧪 MLflow Experiments | https://dagshub.com/icebluesun/telemetry-forge.mlflow |
+| ⚙️ Pipeline Runs | https://github.com/icebluesun/telemetry-forge/actions |
 
 ---
 
@@ -41,8 +45,20 @@ Generates realistic API telemetry (like OpenAI/Claude usage), streams through Ka
 | Transformation | dbt |
 | Orchestration | GitHub Actions |
 | ML Tracking | MLflow (DagsHub) |
-| Dashboard | Streamlit (HuggingFace) |
+| Dashboard | Streamlit (HuggingFace Spaces) |
 | Data Quality | Great Expectations |
+
+---
+
+## ML Models
+
+| Model | Purpose |
+|-------|---------|
+| Isolation Forest | Anomaly detection on latency + error rates |
+| Random Forest | Churn prediction |
+| Kaplan-Meier | Survival analysis by user tier |
+| Diff-in-Diff | Causal inference on feature rollouts |
+| T5 (HF Inference) | LLM-generated executive narrative |
 
 ---
 
@@ -55,36 +71,15 @@ Python · SQL · dbt · Kafka · PostgreSQL · GitHub Actions · MLflow · Great
 ## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/yourusername/telemetry-forge.git
+git clone https://github.com/icebluesun/telemetry-forge.git
 cd telemetry-forge
 
-# Set env vars
-export POSTGRES_DSN="postgresql://..."
-export KAFKA_BROKERS="..."
-export KAFKA_USERNAME="..."
-export KAFKA_PASSWORD="..."
-export KAFKA_TOPIC="api_events"
+# Copy and fill in your credentials
+cp .env.example .env
 
-# Install
+# Install dependencies
 pip install -r global_requirements.txt
 
-# Generate 90 days of data
-cd data_generation
-python producer.py
-
-# Ingest
-cd ../ingestion
-python consumer.py
-
-# Run dbt
-cd ../dbt
-dbt run --profiles-dir .
-
-# Train ML
-cd ../ml_models
-python train_all.py
-
-# Dashboard
-cd ../dashboard
-streamlit run app.py
+# Run local pipeline test
+python test_pipeline_local.py
+```

@@ -98,5 +98,4 @@ websockets==16.0
 wrapt==2.2.2
 zipp==4.1.0
 python-dotenv
-great_expectations==1.4.4
 mlflow
