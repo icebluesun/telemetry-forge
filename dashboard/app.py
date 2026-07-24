@@ -148,6 +148,12 @@ def make_timeseries_chart(df, y_col, title, y_label, color="#4C9BE8"):
 
     fig = go.Figure()
 
+    # Convert hex color to rgba for fill
+    def hex_to_rgba(hex_color, alpha=0.08):
+        hex_color = hex_color.lstrip('#')
+        r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+        return f'rgba({r},{g},{b},{alpha})'
+
     # Solid filled area — complete days
     if not complete.empty:
         fig.add_trace(go.Scatter(
@@ -157,7 +163,7 @@ def make_timeseries_chart(df, y_col, title, y_label, color="#4C9BE8"):
             name='Complete',
             line=dict(color=color, width=2),
             fill='tozeroy',
-            fillcolor=color.replace(')', ', 0.08)').replace('rgb', 'rgba') if 'rgb' in color else color + '14',
+            fillcolor=hex_to_rgba(color),
             hovertemplate=f'%{{x}}<br>{y_label}: %{{y:,.1f}}<extra></extra>',
         ))
 

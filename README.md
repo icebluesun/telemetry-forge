@@ -15,7 +15,7 @@ license: mit
 **Live API analytics platform — streaming, dbt, ML models, and a real-time dashboard.**
 
 [![Pipeline](https://github.com/icebluesun/telemetry-forge/actions/workflows/main.yml/badge.svg)](https://github.com/icebluesun/telemetry-forge/actions/workflows/main.yml)
-[![MLflow on DagsHub](https://img.shields.io/badge/MLflow-DagsHub-orange?logo=mlflow)](https://dagshub.com/icebluesun/telemetry-forge.mlflow)
+[![MLflow on DagsHub](https://img.shields.io/badge/MLflow-DagsHub-orange?logo=mlflow)](https://dagshub.com/dennis13/telemetry-forge.mlflow)
 [![HuggingFace Space](https://img.shields.io/badge/Dashboard-HuggingFace-yellow?logo=huggingface)](https://huggingface.co/spaces/icebluesun/telemetry-forge)
 
 ---
@@ -31,7 +31,7 @@ Generates realistic API telemetry (modelled after OpenAI/Claude usage patterns),
 | | |
 |---|---|
 | 📊 Dashboard | https://icebluesun-telemetry-forge.hf.space |
-| 🧪 MLflow Experiments | https://dagshub.com/icebluesun/telemetry-forge.mlflow |
+| 🧪 MLflow Experiments | https://dagshub.com/dennis13/telemetry-forge.mlflow |
 | ⚙️ Pipeline Runs | https://github.com/icebluesun/telemetry-forge/actions |
 
 ---

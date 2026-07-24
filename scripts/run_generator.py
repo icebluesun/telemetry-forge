@@ -2,6 +2,7 @@
 import os
 import sys
 import uuid
+import random
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,11 +18,28 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy import create_engine, text
 
 RETENTION_DAYS = 90
-CULL_DAYS = 120        # cull anything older than this — buffer beyond retention window
-EVENTS_PER_HOUR = 60  # 1 event per minute per hour slot
+CULL_DAYS = 120
 
 # Namespace for deterministic event_id — same timestamp always = same UUID
 EVENT_NS = uuid.UUID("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+
+# Time-of-day weights (UTC hour → extra events to add this run)
+# Peak business hours get more traffic, nights get less
+HOUR_WEIGHTS = {
+    0: 5,  1: 3,  2: 2,  3: 2,  4: 3,  5: 5,
+    6: 15, 7: 30, 8: 50, 9: 80, 10: 90, 11: 95,
+    12: 85, 13: 90, 14: 95, 15: 90, 16: 80, 17: 60,
+    18: 40, 19: 30, 20: 20, 21: 15, 22: 10, 23: 7,
+}
+
+def get_topup_count(hour_utc: int, is_weekend: bool) -> int:
+    """Random extra events for this hourly run based on time of day."""
+    base = HOUR_WEIGHTS.get(hour_utc, 10)
+    if is_weekend:
+        base = int(base * 0.5)
+    # Add ±30% noise
+    noise = random.uniform(0.7, 1.3)
+    return max(0, int(base * noise))
 
 
 def get_engine(dsn):
@@ -98,23 +116,42 @@ def run():
     missing_slots = [ts for ts in expected_slots if ts not in existing_slots]
     print(f"⚡ Missing slots:  {len(missing_slots):,}")
 
-    if not missing_slots:
-        print("Nothing to generate — DB is fully populated for the retention window.")
-        return
-
-    # Step 4: generate events only for missing slots
+    # Step 4: generate events only for missing slots (deterministic backfill)
     all_events = []
-    for i, ts in enumerate(sorted(missing_slots)):
-        event = gen.generate_event(ts)
-        # Override event_id with deterministic value so re-runs never duplicate
-        event["event_id"] = make_event_id(ts)
-        all_events.append(event)
-        if (i + 1) % 5000 == 0:
-            print(f"  Generated {i + 1:,}/{len(missing_slots):,} events...")
+    if missing_slots:
+        for i, ts in enumerate(sorted(missing_slots)):
+            event = gen.generate_event(ts)
+            event["event_id"] = make_event_id(ts)
+            all_events.append(event)
+            if (i + 1) % 5000 == 0:
+                print(f"  Generated {i + 1:,}/{len(missing_slots):,} events...")
+        print(f"📝 Backfill: {len(all_events):,} events")
+    else:
+        print("✅ Slot map fully populated — no backfill needed.")
 
-    print(f"Generated {len(all_events):,} events. Ingesting...")
-    ingester.upsert_events(all_events)
-    print(f"✅ Done! {len(all_events):,} events ingested.")
+    # Step 5: random top-up for current hour based on time-of-day
+    is_weekend = now.weekday() >= 5
+    topup_count = get_topup_count(now.hour, is_weekend)
+    print(f"🎲 Top-up: +{topup_count} random events for hour {now.hour:02d}:00 UTC (weekend={is_weekend})")
+
+    topup_events = []
+    for _ in range(topup_count):
+        # Random timestamp within the current hour
+        jitter = timedelta(seconds=random.randint(0, 3599))
+        ts = now.replace(minute=0, second=0, microsecond=0) + jitter
+        event = gen.generate_event(ts)
+        # UUID4 — random, not deterministic, so these accumulate naturally
+        event["event_id"] = str(uuid.uuid4())
+        topup_events.append(event)
+
+    all_events.extend(topup_events)
+
+    if all_events:
+        print(f"Ingesting {len(all_events):,} total events...")
+        ingester.upsert_events(all_events)
+        print(f"✅ Done! {len(all_events):,} events ingested ({len(topup_events)} top-up).")
+    else:
+        print("✅ Nothing to ingest this run.")
 
 
 if __name__ == "__main__":
