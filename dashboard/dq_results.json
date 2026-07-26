@@ -1,0 +1,56 @@
+{
+  "run_time": "2026-07-26T16:13:45.313991+00:00",
+  "row_count": 10000,
+  "passed": 8,
+  "total": 8,
+  "checks": [
+    {
+      "expectation": "event_id not null",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "event_id unique",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "user_id not null",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "user_tier in set",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "status_code in set",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "latency_ms in range",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "input_tokens mean in range",
+      "passed": true,
+      "unexpected_pct": 0,
+      "evaluated_count": 10000
+    },
+    {
+      "expectation": "endpoint in set",
+      "passed": true,
+      "unexpected_pct": 0.0,
+      "evaluated_count": 10000
+    }
+  ]
+}
