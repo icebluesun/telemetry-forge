@@ -39,8 +39,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r global_requirements.txt
 
-      - name: Generate and ingest events (batch — bypasses Kafka)
+      - name: Generate and send events to Kafka
         run: python scripts/run_generator.py
+
+      - name: Consume events from Kafka → Postgres
+        run: |
+          cd ingestion
+          python -c "from consumer import consume_batch; consume_batch(drain_timeout_ms=15000)"
 
       - name: Run dbt transformations
         run: |
@@ -48,6 +53,9 @@ jobs:
           dbt deps || true
           dbt run --profiles-dir .
           dbt test --profiles-dir . || true
+
+      - name: Run data quality checks
+        run: python scripts/run_dq.py
 
       - name: Cull old MLflow runs (keep last 48)
         run: |
@@ -85,6 +93,6 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add dashboard/narrative.txt dashboard/causal_report.md || true
+          git add dashboard/narrative.txt dashboard/causal_report.md dashboard/dq_results.json || true
           git commit -m "Update narrative [skip ci]" || true
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

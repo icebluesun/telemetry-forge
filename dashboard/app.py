@@ -282,14 +282,40 @@ elif choice == "Churn":
 # ---------- QUALITY ----------
 elif choice == "Quality":
     st.header("✅ Data Quality")
-    st.success("All quality checks passed")
-    st.code("""
-    ✓ Schema validation: OK
-    ✓ Null rates: within threshold
-    ✓ Duplicates: none
-    ✓ Outliers: 0.5% detected (normal)
-    """)
-    st.caption(f"Last checked: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    import urllib.request, json as _json
+    GITHUB_RAW = "https://raw.githubusercontent.com/icebluesun/telemetry-forge/main/dashboard"
+    try:
+        with urllib.request.urlopen(f"{GITHUB_RAW}/dq_results.json") as r:
+            dq = _json.loads(r.read().decode("utf-8"))
+
+        passed = dq["passed"]
+        total = dq["total"]
+        run_time = dq["run_time"][:19].replace("T", " ") + " UTC"
+        row_count = dq["row_count"]
+
+        # Summary metrics
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Checks Passed", f"{passed}/{total}")
+        c2.metric("Rows Sampled", f"{row_count:,}")
+        c3.metric("Last Run", run_time)
+
+        if passed == total:
+            st.success(f"All {total} checks passed ✅")
+        else:
+            st.warning(f"{total - passed} check(s) failed")
+
+        # Per-check breakdown
+        st.subheader("Check Details")
+        for check in dq["checks"]:
+            icon = "✅" if check["passed"] else "❌"
+            unexpected = check.get("unexpected_pct", 0)
+            col1, col2 = st.columns([3, 1])
+            col1.write(f"{icon} {check['expectation']}")
+            if not check["passed"]:
+                col2.write(f"⚠️ {unexpected:.1f}% unexpected")
+
+    except Exception as e:
+        st.warning(f"DQ results not available yet — pipeline will generate them on next run. ({e})")
 
 # ---------- AI NARRATIVE ----------
 elif choice == "AI Narrative":

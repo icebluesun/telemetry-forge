@@ -10,10 +10,9 @@ load_dotenv()
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "data_generation"))
-sys.path.insert(0, str(project_root / "ingestion"))
 
 from generator import APITelemetryGenerator
-from consumer import PostgresIngester
+from producer import send_events
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import create_engine, text
 
@@ -93,7 +92,6 @@ def make_event_id(ts: datetime) -> str:
 def run():
     dsn = os.environ["POSTGRES_DSN"]
     engine = get_engine(dsn)
-    ingester = PostgresIngester(dsn)
     gen = APITelemetryGenerator(seed=42, churn_rate=0.25)
 
     # Step 1: cull anything older than 120 days
@@ -147,11 +145,11 @@ def run():
     all_events.extend(topup_events)
 
     if all_events:
-        print(f"Ingesting {len(all_events):,} total events...")
-        ingester.upsert_events(all_events)
-        print(f"✅ Done! {len(all_events):,} events ingested ({len(topup_events)} top-up).")
+        print(f"📨 Sending {len(all_events):,} total events to Kafka ({len(topup_events)} top-up)...")
+        send_events(all_events)
+        print(f"✅ Done! {len(all_events):,} events sent to Kafka.")
     else:
-        print("✅ Nothing to ingest this run.")
+        print("✅ Nothing to send this run.")
 
 
 if __name__ == "__main__":

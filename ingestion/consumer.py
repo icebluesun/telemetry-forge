@@ -107,14 +107,29 @@ class PostgresIngester:
             if result.rowcount > 0:
                 logger.info(f"Deleted {result.rowcount} old events (older than {days} days)")
 
-def consume_and_ingest():
+def _write_ca_cert():
+    ca_cert = os.getenv("KAFKA_CA_CERT", "")
+    if not ca_cert:
+        return None
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.pem') as f:
+        f.write(ca_cert)
+        return f.name
+
+
+def consume_batch(drain_timeout_ms: int = 10000):
+    """
+    Batch-exit consumer — reads until the topic is drained
+    (no new messages for drain_timeout_ms), then exits cleanly.
+    Safe to run in GitHub Actions.
+    """
     if not POSTGRES_DSN:
         raise ValueError("POSTGRES_DSN not set")
-    
+
     ingester = PostgresIngester(POSTGRES_DSN)
-    
-    consumer = KafkaConsumer(
-        KAFKA_TOPIC,
+    ca_cert_path = _write_ca_cert()
+
+    config = dict(
         bootstrap_servers=KAFKA_BROKERS,
         security_protocol="SASL_SSL",
         sasl_mechanism="SCRAM-SHA-256",
@@ -123,28 +138,38 @@ def consume_and_ingest():
         value_deserializer=lambda m: json.loads(m.decode("utf-8")),
         auto_offset_reset="earliest",
         enable_auto_commit=False,
-        group_id="api_ingestion_group"
+        group_id="api_ingestion_group",
+        consumer_timeout_ms=drain_timeout_ms,  # exits when topic is drained
     )
-    
+    if ca_cert_path:
+        config['ssl_cafile'] = ca_cert_path
+
+    consumer = KafkaConsumer(KAFKA_TOPIC, **config)
+
     batch = []
-    BATCH_SIZE = 100
+    BATCH_SIZE = 500
+    total = 0
+
     try:
-        for message in consumer:
-            event = message.value
-            batch.append(event)
+        for message in consumer:  # StopIteration raised after drain_timeout_ms silence
+            batch.append(message.value)
             if len(batch) >= BATCH_SIZE:
                 ingester.upsert_events(batch)
-                ingester.delete_older_than(90)
                 consumer.commit()
+                total += len(batch)
+                logger.info(f"  Ingested {total:,} events so far...")
                 batch = []
-    except KeyboardInterrupt:
-        logger.info("Shutting down.")
+    except StopIteration:
+        logger.info("Topic drained — no new messages.")
     finally:
         if batch:
             ingester.upsert_events(batch)
-            ingester.delete_older_than(90)
             consumer.commit()
+            total += len(batch)
         consumer.close()
 
+    logger.info(f"✅ consume_batch complete. Total ingested: {total:,}")
+
+
 if __name__ == "__main__":
-    consume_and_ingest()
+    consume_batch()

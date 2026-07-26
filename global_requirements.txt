@@ -99,3 +99,4 @@ wrapt==2.2.2
 zipp==4.1.0
 python-dotenv
 mlflow
+great_expectations>=0.18,<1.0
