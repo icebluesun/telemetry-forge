@@ -31,11 +31,11 @@ def main():
     with mlflow.start_run(run_name="full_training_run"):
         print("Training anomaly detector...")
         anomaly_model = train_anomaly_detector()
-        mlflow.sklearn.log_model(anomaly_model, "anomaly_detector")
+        mlflow.sklearn.log_model(anomaly_model, "anomaly_detector", skops_trusted_types=["sklearn.tree._tree.Tree"])
 
         print("Training churn prediction model...")
         churn_model, feature_importances = train_churn_model()
-        mlflow.sklearn.log_model(churn_model, "churn_predictor")
+        mlflow.sklearn.log_model(churn_model, "churn_predictor", skops_trusted_types=["sklearn.tree._tree.Tree"])
 
         fi_path = ML_DIR / "feature_importances.json"
         with open(fi_path, "w") as f:
