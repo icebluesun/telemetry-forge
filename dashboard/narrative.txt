@@ -1,4 +1,9 @@
 Platform Health Summary:
-Plattform hat 380.0 täglich aktive Benutzer, 1 187.0 Anfragen, Fehlerrate 7,08%, durchschnittliche Latenzzeit 23,6ms.
 
-[source: LLM google-t5/t5-small]
+The API platform is currently operating in a critical state with an overall error rate of 6.95 percent across 1237 requests and 405 daily active users, representing a slight degradation from the previous day's 6.76 percent error rate across 1612 requests and 505 daily active users. Average latency remained stable at 23.4 milliseconds with a p95 of 61.2 milliseconds, while rate-limiting affected 2.67 percent of traffic and total token consumption reached 1,355,274.
+
+Failures are heavily concentrated in the enterprise tier with a 16.67 percent error rate, the us-east region at 9.25 percent, and the embeddings endpoint at 8.81 percent error rate, driven primarily by 19 InternalServerError and 18 TimeoutError occurrences. The disproportionate impact on enterprise users and heavy regions indicates capacity or routing bottlenecks, likely exacerbated by downstream timeouts during embedding generation.
+
+Immediate remediation requires scaling resources in us-east and investigating the root cause of internal server errors on the embeddings endpoint to protect high-value enterprise traffic. Following this, the engineering team must address the timeout issues contributing to the 18 TimeoutErrors and evaluate concurrency limits for pro and enterprise tiers to mitigate ongoing stability risks.
+
+[source: LLM gemini-3.5-flash-lite]
