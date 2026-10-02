@@ -21,6 +21,7 @@ env:
   DBT_PASSWORD: ${{ secrets.DBT_PASSWORD }}
   DBT_DBNAME: ${{ secrets.DBT_DBNAME }}
   HF_API_TOKEN: ${{ secrets.HF_API_TOKEN }}
+  GG_API_TOKEN: ${{ secrets.GG_API_TOKEN }}
 
 jobs:
   run-pipeline:
