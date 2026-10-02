@@ -64,12 +64,15 @@ def generate_narrative():
     
     try:
         response = requests.post(api_url, headers=headers, json=payload, timeout=15)
+        print(f"[narrative] HF status={response.status_code} body={response.text[:200]!r}")
         
         if response.status_code == 200:
             result = response.json()
             if isinstance(result, list) and len(result) > 0:
                 text = result[0].get('translation_text', '')
-                return f"Platform Health Summary:\n{text}" if text else "No text generated."
+                if text:
+                    return f"Platform Health Summary:\n{text}\n\n[source: LLM {model}]"
+                return "No text generated.\n\n[source: LLM empty output]"
             return str(result)
         else:
             # Fallback: return formatted metrics
@@ -79,10 +82,13 @@ def generate_narrative():
 - Error Rate: {metrics['error_rate']:.2f}%
 - Avg Latency: {metrics['avg_latency']:.1f}ms
 - P95 Latency: {metrics['p95_latency']:.1f}ms
-Platform is operating within normal parameters."""
+Platform is operating within normal parameters.
+
+[source: template fallback, HF status {response.status_code}]"""
             
     except Exception as e:
-        return f"Error: {str(e)}"
+        print(f"[narrative] exception: {e!r}")
+        return f"Error: {str(e)}\n\n[source: error]"
 
 if __name__ == "__main__":
     print(generate_narrative())
