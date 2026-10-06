@@ -1,9 +1,9 @@
 Platform Health Summary:
 
-The API platform is currently in a degraded state with an overall error rate of 2.78 percent across 36 requests from 26 daily active users. This represents a notable improvement from the previous day, which saw a critical error rate of 6.54 percent across 1,545 requests and 464 daily active users, alongside decreases in average latency from 22.8 milliseconds to 18.4 milliseconds and p95 latency from 61.1 milliseconds to 35.6 milliseconds.
+The API platform remains in a critical state with an overall error rate of 6.58 percent across 441 requests on 2026-10-06, showing virtually no change from the previous day's 6.54 percent error rate across 1,545 requests, while daily active users dropped from 464 to 148, average latency held steady at 22.3 milliseconds, and p95 latency ticked up slightly to 61.2 milliseconds.
 
-The current issues are isolated to a single InternalServerError, causing failures exclusively on the us-west region at 33.33 percent, the pro user tier at 11.11 percent, and the embeddings endpoint at 16.67 percent error rates. Because total traffic volume is very low and zero rate-limiting occurred, these localized errors likely stem from transient regional routing hiccups rather than systemic platform overload.
+Errors are heavily concentrated in specific segments, led by the enterprise tier at 25 percent and the pro tier at 8.33 percent, while geographically us-west and us-east suffer the highest failure rates at 11.11 percent and 8.73 percent respectively, and endpoint failures peak on /v1/embeddings at 9.2 percent; the primary failure drivers are InternalServerError, TimeoutError, APIError, and RateLimitError, suggesting cascading backend strain affecting premium users and US traffic most severely.
 
-Immediate actions should begin with investigating the us-west infrastructure routing and the embeddings service logic to resolve the single InternalServerError affecting pro tier users. Following that, monitoring should be maintained on the ap-southeast region where p95 latency reached an elevated 117.0 milliseconds despite a zero error rate.
+Immediate actions must prioritize investigating internal server errors and timeouts on the us-west and us-east infrastructure to restore enterprise and pro tier stability, followed by targeted capacity remediation for the /v1/embeddings endpoint, and finally a review of rate limiting logic given the 2.27 percent rate-limited request volume.
 
 [source: LLM gemini-3.5-flash-lite]
