@@ -1,9 +1,9 @@
 Platform Health Summary:
+- DAU: 241
+- Requests: 804
+- Error Rate: 6.47%
+- Avg Latency: 22.7ms
+- P95 Latency: 64.9ms
+Error rate is above the 5.0% critical threshold; immediate attention required.
 
-Platform health is currently critical as the overall error rate sits at 6.9 percent, far exceeding the five percent threshold for a critical status. During the latest day of October 13, 2026, the platform handled 261 requests from 89 daily active users, maintaining an average latency of 23.4 milliseconds, a p95 latency of 71.6 milliseconds, and a rate-limit percentage of 2.3 percent across 299,929 tokens. Compared to the previous day, daily active users dropped significantly from 440 to 89, total requests fell from 1,480 to 261, and the error rate remained virtually flat showing a slight improvement from 6.96 percent to 6.9 percent, while p95 latency increased from 62.3 milliseconds to 71.6 milliseconds.
-
-Problems are heavily concentrated in specific areas, led by the enterprise tier experiencing a severe 33.33 percent error rate and a 184.0 millisecond p95 latency, alongside pro users at 8.33 percent errors. Geographically, us-west and us-east are the worst performing regions with error rates of 10.0 percent and 9.86 percent respectively, while endpoint failures center on /v1/chat at 9.3 percent errors and /v1/completions at 7.27 percent errors. The primary error drivers are InternalServerErrors, APIErrors, and TimeoutErrors, suggesting underlying backend capacity or upstream service degradation impacting high-value chat and completion workloads in domestic US regions.
-
-Immediate action must begin with investigating the root cause of InternalServerErrors and TimeoutErrors affecting chat and completion endpoints in the us-west and us-east regions to protect high-tier clients. Second, engineering needs to address the severe 33.33 percent error rate impacting enterprise users and the 8.33 percent affecting pro users to restore trust in paid tiers. Finally, infrastructure teams should monitor rate-limiting behavior currently standing at 2.3 percent and evaluate regional capacity constraints in the United States versus the healthy ap-southeast region.
-
-[source: LLM gemini-3.5-flash-lite]
+[source: template fallback, error: ReadTimeout]
