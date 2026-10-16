@@ -1,9 +1,9 @@
 Platform Health Summary:
-- DAU: 153
-- Requests: 425
-- Error Rate: 6.82%
-- Avg Latency: 22.9ms
-- P95 Latency: 59.4ms
+- DAU: 274
+- Requests: 825
+- Error Rate: 7.39%
+- Avg Latency: 22.3ms
+- P95 Latency: 59.9ms
 Error rate is above the 5.0% critical threshold; immediate attention required.
 
 [source: template fallback, Gemini status 503]
