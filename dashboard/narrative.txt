@@ -1,9 +1,9 @@
 Platform Health Summary:
 
-The API platform is operating in a critical state with an overall error rate of 6.90 percent on 2026-10-31, exceeding the critical threshold of 5.0 percent and worsening slightly from 6.65 percent on 2026-10-30. Daily active users dropped significantly from 490 to 154, and total requests decreased from 1,548 to 478, while average latency remained stable at 22.6 milliseconds alongside a p95 latency of 61.4 milliseconds, a 2.09 percent rate-limited rate, and 535,875 processed tokens.
+The API platform status is critical, with the error rate worsening from 6.65 percent yesterday to 7.13 percent today across 898 requests from 278 daily active users, though latency remained stable with an average of 23.0 milliseconds and a p95 of 62.7 milliseconds alongside 1,009,633 processed tokens. 
 
-Failures are heavily concentrated in specific segments, led by the enterprise tier suffering a severe 35.0 percent error rate and a 259.0 millisecond p95 latency, alongside the us-west region at a 12.9 percent error rate and the chat endpoint reaching an 8.61 percent error rate with a 90.8 millisecond p95. The dominant failure modes are InternalServerError and TimeoutError with 8 occurrences each, followed by APIError, AuthenticationError, and RateLimitError with 5 occurrences each, suggesting localized infrastructure stress affecting high-value enterprise traffic primarily in Western regions.
+Issues are heavily concentrated in the enterprise user tier, which experienced a severe 27.78 percent error rate with a p95 latency of 259.0 milliseconds, and in the us-west region at an 11.5 percent error rate and 131.1 millisecond p95 latency, while the chat endpoint is the most degraded at 8.42 percent errors and the top error drivers are InternalServerError and TimeoutError. 
 
-Immediate remediation must start with investigating the infrastructure and database bottlenecks in us-west and addressing the root causes of InternalServerError and TimeoutError impacting enterprise tier clients on the chat endpoint. Following that, engineering should audit the authentication service and review rate-limiting configurations to protect degraded endpoints while stability is restored.
+Immediate remediation must prioritize investigating the infrastructure in us-west and resolving internal server and timeout errors impacting enterprise chat traffic, followed by auditing pro tier performance and verifying capacity limits against the 2.23 percent rate-limited traffic.
 
 [source: LLM gemini-3.5-flash-lite]
