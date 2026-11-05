@@ -1,9 +1,9 @@
 Platform Health Summary:
+- DAU: 309
+- Requests: 1,080
+- Error Rate: 6.11%
+- Avg Latency: 22.7ms
+- P95 Latency: 62.4ms
+Error rate is above the 5.0% critical threshold; immediate attention required.
 
-The API platform's overall health status is critical, with the current error rate standing at 6.21 percent against a healthy threshold of under 2.0 percent. On 2026-11-05, we recorded 147 daily active users across 483 requests, with an average latency of 22.8 milliseconds, a p95 latency of 62.2 milliseconds, a 2.28 percent rate-limited rate, and 531,549 tokens processed. This represents a slight improvement in error rate compared to the previous day on 2026-11-04, which saw 461 daily active users, 1,496 requests, and a 6.35 percent error rate with an average latency of 22.7 milliseconds and a p95 latency of 62.3 milliseconds.
-
-Problems are heavily concentrated in specific segments, led by the enterprise user tier at 15.0 percent errors and a p95 latency of 186.4 milliseconds, followed by pro users at 8.4 percent errors and free users at 4.94 percent errors. Regionally, us-west and us-east are the worst affected with 8.62 percent and 7.75 percent errors respectively, while endpoints like /v1/embeddings show the highest error rate at 7.14 percent alongside /v1/chat and /v1/completions both at 6.0 percent. The primary error types driving these issues are InternalServerError, APIError, TimeoutError, RateLimitError, and AuthenticationError, pointing to backend infrastructure strain and capacity bottlenecks predominantly impacting US-based enterprise and pro traffic.
-
-Immediate remediation should focus on investigating the root cause of InternalServerErrors and Timeouts in the us-west and us-east regions to alleviate the high error rates experienced by enterprise and pro tier users. We must also review capacity and rate-limiting policies on the /v1/embeddings endpoint, which currently exhibits the highest error rate across the platform. Finally, support and engineering should investigate the authentication failures and general API errors to stabilize traffic before the next scaling threshold is reached.
-
-[source: LLM gemini-3.5-flash-lite]
+[source: template fallback, Gemini status 503]
