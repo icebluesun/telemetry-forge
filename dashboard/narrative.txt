@@ -1,9 +1,9 @@
 Platform Health Summary:
+- DAU: 321
+- Requests: 1,066
+- Error Rate: 6.57%
+- Avg Latency: 23.2ms
+- P95 Latency: 64.7ms
+Error rate is above the 5.0% critical threshold; immediate attention required.
 
-Platform health is currently critical as error rates remain well above the 5.0 percent threshold at 6.98 percent for 516 total requests across 167 daily active users. This represents a persistent degradation from the previous day's error rate of 6.87 percent across 1,513 requests and 443 daily active users, though average latency held steady at 23.8 milliseconds alongside 570,429 processed tokens and a 2.71 percent rate-limiting rate.
-
-The failures are heavily concentrated among enterprise and pro users experiencing 14.29 percent and 9.23 percent error rates respectively, predominantly impacting the us-east region with 9.15 percent errors and the embeddings and completions endpoints with error rates near 8 percent. The primary drivers are APIError, TimeoutError, and InternalServerError instances, compounded by elevated p95 latency spikes reaching 182.6 milliseconds in us-west and among enterprise accounts.
-
-Immediate remediation must begin with an urgent investigation into the us-east infrastructure and the embedding and completion endpoints to resolve underlying timeouts and internal server failures affecting higher-tier users. Concurrently, engineering should review rate-limiting logic and resource allocation for enterprise and pro tiers to stabilize performance, followed by a broader audit of latency regressions in the us-west region.
-
-[source: LLM gemini-3.5-flash-lite]
+[source: template fallback, Gemini status 503]
