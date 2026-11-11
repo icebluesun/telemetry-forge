@@ -1,9 +1,9 @@
 Platform Health Summary:
-- DAU: 329
-- Requests: 1,096
-- Error Rate: 6.75%
-- Avg Latency: 23.0ms
-- P95 Latency: 65.3ms
-Error rate is above the 5.0% critical threshold; immediate attention required.
 
-[source: template fallback, Gemini status 503]
+The API platform is currently in a critical operational state with an overall error rate of 6.82 percent across 1,481 total requests from 447 daily active users, representing a slight worsening from the previous day's 6.57 percent error rate across 1,553 requests and 494 daily active users. Average latency remained stable at 22.9 milliseconds compared to 22.8 milliseconds yesterday, while p95 latency increased to 64.7 milliseconds from 61.6 milliseconds.
+
+The failures are heavily concentrated in specific segments, led by enterprise tier users experiencing a severe 20.69 percent error rate and a 259.0 millisecond p95 latency, as well as pro users at 9.34 percent errors. Regionally, us-west is the most distressed area with a 10.22 percent error rate and a 154.9 millisecond p95 latency, followed closely by us-east at 8.75 percent errors. Endpoint performance shows the highest error rates on /v1/chat at 7.63 percent and /v1/embeddings at 7.38 percent, driven predominantly by 25 TimeoutErrors, 24 InternalServerErrors, and 18 APIErrors.
+
+Immediate remediation must start with investigating the root cause of timeouts and internal server errors in the us-west region, which is disproportionately impacting high-value enterprise and pro tier traffic. Following that, engineering should focus on stabilizing the /v1/chat and /v1/embeddings endpoints to bring error rates back below the 2.0 percent healthy threshold. Finally, capacity and infrastructure in us-east should be reviewed next to address the secondary cluster of elevated error rates before they escalate further.
+
+[source: LLM gemini-3.5-flash-lite]
