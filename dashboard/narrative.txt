@@ -1,9 +1,9 @@
 Platform Health Summary:
+- DAU: 380
+- Requests: 1,281
+- Error Rate: 6.25%
+- Avg Latency: 22.8ms
+- P95 Latency: 65.7ms
+Error rate is above the 5.0% critical threshold; immediate attention required.
 
-The API platform remains in a critical state with an overall error rate of 6.05 percent across 760 requests from 232 daily active users on November 19, showing virtually no improvement from the previous day's critical error rate of 6.16 percent across 1,525 requests and 462 daily active users. Latency performance remained stable day-over-day, with average latency moving slightly from 22.9 milliseconds to 22.7 milliseconds and p95 latency shifting from 64.3 milliseconds to 66.5 milliseconds, alongside 2.24 percent of traffic being rate-limited while processing 836,376 tokens.
-
-Operational issues are heavily concentrated in specific segments, led by enterprise users suffering a severe 16.22 percent error rate and 197.9 millisecond p95 latency, and pro users facing an 8.38 percent error rate. Geographically, us-west and us-east are struggling with 8.08 percent and 7.27 percent error rates respectively, while endpoint failures center on embeddings at 7.33 percent and chat at 6.69 percent. The failures are driven primarily by a mix of 11 APIErrors, 11 InternalServerErrors, 8 TimeoutErrors, 7 RateLimitErrors, and 6 AuthenticationErrors, which disproportionately degrade premium tiers despite ap-southeast remaining healthy at a 0.79 percent error rate.
-
-Immediate remediation must start with investigating the root cause of internal server errors and timeouts affecting high-value enterprise and pro users on the us-west and us-east infrastructure. Second, engineering needs to audit theembeddings and chat endpoints to resolve the elevated failure rates driving the overall critical status. Finally, the platform should review rate-limiting policies and authentication mechanisms to address the parallel spike in RateLimitError and AuthenticationError occurrences before the next traffic cycle.
-
-[source: LLM gemini-3.5-flash-lite]
+[source: template fallback, Gemini status 503]
